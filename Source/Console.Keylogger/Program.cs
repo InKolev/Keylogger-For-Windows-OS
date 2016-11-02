@@ -3,6 +3,10 @@
     using System;
     using System.Drawing;
     using System.IO;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Formatting;
+    using System.Net.Http.Headers;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Threading;
@@ -60,14 +64,14 @@
             }
         }
 
-        private static void StartSnapshots()
+        private async static Task StartSnapshots()
         {
             var primaryScreenBounds = Screen.PrimaryScreen.Bounds;
             var primaryScreenWidth = primaryScreenBounds.Width;
             var primaryScreenHeight = primaryScreenBounds.Height;
 
-            var datetime = default(DateTime);
-            var timeOfDay = default(TimeSpan);
+            var currentDate = default(DateTime);
+            var currentTime = default(TimeSpan);
             var fileName = default(String);
 
             using (var bitmapScreenCapture = new Bitmap(primaryScreenWidth, primaryScreenHeight))
@@ -83,15 +87,37 @@
                             bitmapScreenCapture.Size,
                             CopyPixelOperation.SourceCopy);
 
-                        datetime = DateTime.Now;
-                        timeOfDay = datetime.TimeOfDay;
-                        fileName = $"{datetime.Year}-{datetime.Month}-{datetime.Day}({timeOfDay.Hours}-{timeOfDay.Minutes}-{timeOfDay.Seconds}).jpeg";
+                        //currentDate = DateTime.Now;
+                        //currentTime = currentDate.TimeOfDay;
 
-                        bitmapScreenCapture.Save(fileName);
+                        //fileName = $"{currentDate.Year}-{currentDate.Month}-{currentDate.Day}({currentTime.Hours}-{currentTime.Minutes}-{currentTime.Seconds}).jpeg";
 
-                        Thread.Sleep(2000);
+                        var imageAsByteArray = ConvertionOperations.ImageToByteArray(bitmapScreenCapture);
+                        await SendRequestAsync(imageAsByteArray);
+
+                        Thread.Sleep(10000);
                     }
                 }
+            }
+        }
+
+        public static async Task SendRequestAsync(byte[] requestData)
+        {
+            using (var client = new HttpClient())
+            {
+                // Set the API base address
+                client.BaseAddress = new Uri("http://localhost:62164/");
+
+                // Set the Accept header for BSON
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/bson"));
+
+                // POST using the BSON formatter
+                var bsonFormatter = new BsonMediaTypeFormatter();
+                var result = await client.PostAsync("api/Images/Receive", requestData, bsonFormatter);
+
+                result.EnsureSuccessStatusCode();
             }
         }
     }
