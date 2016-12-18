@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HIT.Common.Utils
 {
     public abstract class DateTimeProvider
     {
-        private static DateTimeProvider current = DefaultDateTimeProvider.Instance;
+        private static DateTimeProvider current = StandardDateTimeProvider.Instance;
 
+        /// <summary>
+        /// Represents the current instance of a datetime provider.
+        /// Uses a StandardDateTimeProvider instance by default.
+        /// </summary>
         public static DateTimeProvider Current
         {
             get
             {
-                return DateTimeProvider.current;
+                return current;
             }
 
             set
@@ -24,7 +24,7 @@ namespace HIT.Common.Utils
                     throw new ArgumentNullException("The DateTimeProvider cannot be null");
                 }
 
-                DateTimeProvider.current = value;
+                current = value;
             }
         }
 
@@ -34,29 +34,7 @@ namespace HIT.Common.Utils
 
         public static void ResetToDefault()
         {
-            DateTimeProvider.current = DefaultDateTimeProvider.Instance;
-        }
-    }
-
-    // TODO: Make it singleton with concurrent access considerations
-    public class DefaultDateTimeProvider : DateTimeProvider
-    {
-        public static readonly DateTimeProvider Instance = new DefaultDateTimeProvider();
-
-        public override DateTime Now
-        {
-            get
-            {
-                return DateTime.Now;
-            }
-        }
-
-        public override DateTime UtcNow
-        {
-            get
-            {
-                return DateTime.UtcNow;
-            }
+            current = StandardDateTimeProvider.Instance;
         }
     }
 }

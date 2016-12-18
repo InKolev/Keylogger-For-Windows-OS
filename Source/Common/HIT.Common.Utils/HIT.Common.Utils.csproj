@@ -42,7 +42,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvertionOperations.cs" />
+    <Compile Include="DateTimeProvider.cs" />
+    <Compile Include="StandardDateTimeProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Web\HIT.Web.Infrastructure\HIT.Web.Infrastructure.csproj">
+      <Project>{81125459-FFE4-492F-9BCE-3D9B99CB9904}</Project>
+      <Name>HIT.Web.Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
