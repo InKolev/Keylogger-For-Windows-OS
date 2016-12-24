@@ -28,6 +28,7 @@ namespace HIT.Desktop.Spy
             var primaryScreenWidth = primaryScreenBounds.Width;
             var primaryScreenHeight = primaryScreenBounds.Height;
 
+            var deviceName = Screen.PrimaryScreen.DeviceName;
             using (var bitmapScreenCapture = new Bitmap(primaryScreenWidth, primaryScreenHeight))
             {
                 using (var graphics = Graphics.FromImage(bitmapScreenCapture))
@@ -42,7 +43,15 @@ namespace HIT.Desktop.Spy
                             CopyPixelOperation.SourceCopy);
 
                         var imageAsByteArray = ConvertionOperations.ImageToByteArray(bitmapScreenCapture);
-                        await SendSnapshotAsync(imageAsByteArray);
+
+                        try
+                        {
+                            await SendSnapshotAsync(imageAsByteArray);
+                        }
+                        catch (Exception e)
+                        {
+                            throw;
+                        }
 
                         Thread.Sleep(10000);
                     }
@@ -76,7 +85,7 @@ namespace HIT.Desktop.Spy
 
                 // POST using the BSON formatter
                 var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync("api/Sessions/ReceiveSnapshot", model, bsonFormatter);
+                var result = await client.PostAsync("api/Sessions/PostSnapshot", model, bsonFormatter);
 
                 result.EnsureSuccessStatusCode();
             }
