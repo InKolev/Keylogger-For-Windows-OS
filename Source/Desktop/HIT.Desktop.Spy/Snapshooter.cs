@@ -14,12 +14,11 @@ namespace HIT.Desktop.Spy
     public class Snapshooter : IRunnable
     {
         private readonly string SessionId;
-        private bool isRunning;
+        private bool isRunning = true;
 
         public Snapshooter(string sessionId)
         {
             this.SessionId = sessionId;
-            this.isRunning = true;
         }
 
         public async Task Start()

