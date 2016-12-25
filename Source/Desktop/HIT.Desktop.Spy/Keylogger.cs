@@ -100,6 +100,13 @@ namespace HIT.Desktop.Spy
                 // A way to solve the problem with missing keys is to send the whole list everytime
                 // but this will have a huge impact on performance and will lead to memory leaks 
                 
+                // Genious solution - 
+                // Copy only the first 10 logged symbols in the keysToSendList
+                // Remove the first 10 logged symbols from the original list
+                // Better yet - use a queue, and dequeue the symbols that must be sent
+                // Enqueue the keys that are pressed while we are dequeu-ing.
+                // This will result in a no loss of keys logged
+                // Brilliant, Ivan, Brilliant!
                 try
                 {
                     await this.SendKeysPressedAsync(keysToSend);
