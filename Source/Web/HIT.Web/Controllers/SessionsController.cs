@@ -3,8 +3,8 @@ using System.IO;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using HIT.Common.Extensions;
 using HIT.Common.Utils;
-using HIT.Web.Infrastructure.Extensions;
 using HIT.Web.ViewModels;
 
 namespace HIT.Web.Controllers
@@ -54,11 +54,12 @@ namespace HIT.Web.Controllers
 
             this.CreateDirectory(filePath);
 
+            // TODO: Try-catch much?
             using (StreamWriter writer = new StreamWriter(fullFilePath, appendData))
             {
-                for (int i = 0; i < model.KeysPressedList.Count; i++)
+                foreach (var keyPressed in model.KeysPressed)
                 {
-                    writer.WriteLine(model.KeysPressedList[i]);
+                    writer.WriteLine(keyPressed);
                 }
 
                 writer.Flush();

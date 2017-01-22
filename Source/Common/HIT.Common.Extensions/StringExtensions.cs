@@ -1,4 +1,4 @@
-﻿namespace HIT.Web.Infrastructure.Extensions
+﻿namespace HIT.Common.Extensions
 {
     public static class StringExtensions
     {
@@ -6,6 +6,7 @@
         {
             var indexNotFound = -1;
             var containsAny = text.IndexOfAny(characters) != indexNotFound;
+
             return containsAny;
         }
     }

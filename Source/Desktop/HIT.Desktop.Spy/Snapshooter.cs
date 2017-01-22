@@ -27,7 +27,6 @@ namespace HIT.Desktop.Spy
             var primaryScreenWidth = primaryScreenBounds.Width;
             var primaryScreenHeight = primaryScreenBounds.Height;
 
-            var deviceName = Screen.PrimaryScreen.DeviceName;
             using (var bitmapScreenCapture = new Bitmap(primaryScreenWidth, primaryScreenHeight))
             {
                 using (var graphics = Graphics.FromImage(bitmapScreenCapture))
@@ -45,11 +44,19 @@ namespace HIT.Desktop.Spy
 
                         try
                         {
-                            await SendSnapshotAsync(imageAsByteArray);
+                            var baseAddress = "http://localhost:62164/";
+                            var requestUri = "api/Sessions/PostSnapshot";
+                            var model = new SnapshotViewModel
+                            {
+                                SessionId = this.SessionId,
+                                SnapshotAsByteArray = imageAsByteArray
+                            };
+
+                            await SendTo(baseAddress,requestUri, model);
                         }
-                        catch (Exception e)
+                        catch (Exception exc)
                         {
-                            throw;
+                            // TODO: Log the exception cause
                         }
 
                         Thread.Sleep(10000);
@@ -63,28 +70,23 @@ namespace HIT.Desktop.Spy
             this.isRunning = false;
         }
 
-        private async Task SendSnapshotAsync(byte[] data)
+        private async Task SendTo<T>(string baseAddress, string requestUri, T data)
         {
-            var model = new SnapshotViewModel
-            {
-                SessionId = this.SessionId,
-                SnapshotAsByteArray = data
-            };
-
+            // TODO: Introduce an HttpClientProvider to detach from the HttpClient type
+            // and make the code more testable
             using (var client = new HttpClient())
             {
-                // Set the API base address
-                //client.BaseAddress = new Uri("http://localhost:62164/");
-                client.BaseAddress = new Uri("http://craftcluster.com/");
+                // Set the Base address for all request uri's
+                client.BaseAddress = new Uri(baseAddress);
 
-                // Set the Accept header for BSON
+                // Set the Accept header to ContentType BSON
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(
                     new MediaTypeWithQualityHeaderValue("application/bson"));
 
-                // POST using the BSON formatter
+                // POST using a BSON formatter
                 var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync("api/Sessions/PostSnapshot", model, bsonFormatter);
+                var result = await client.PostAsync(requestUri, data, bsonFormatter);
 
                 result.EnsureSuccessStatusCode();
             }

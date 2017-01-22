@@ -1,4 +1,4 @@
-﻿namespace HIT.Web.Infrastructure.Extensions
+﻿namespace HIT.Common.Extensions
 {
     public static class ObjectExtensions
     {

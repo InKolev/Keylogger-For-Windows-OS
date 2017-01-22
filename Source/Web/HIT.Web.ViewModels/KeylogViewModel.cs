@@ -4,6 +4,6 @@ namespace HIT.Web.ViewModels
 {
     public class KeysPressedViewModel : BaseViewModel
     {
-        public IList<string> KeysPressedList { get; set; }
+        public IEnumerable<string> KeysPressed { get; set; }
     }
 }

@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Inspector.cs" />
+    <Compile Include="InspectorSettings.cs" />
     <Compile Include="IRunnable.cs" />
     <Compile Include="Keylogger.cs" />
     <Compile Include="Keys.cs" />
@@ -69,13 +70,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\HIT.Common.Extensions\HIT.Common.Extensions.csproj">
+      <Project>{DBFBF737-8E7B-40BB-A863-A496AFFA359F}</Project>
+      <Name>HIT.Common.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Common\HIT.Common.Utils\HIT.Common.Utils.csproj">
       <Project>{905C79F7-6B10-41DF-9035-CC14A25852FE}</Project>
       <Name>HIT.Common.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Web\HIT.Web.Infrastructure\HIT.Web.Infrastructure.csproj">
-      <Project>{81125459-FFE4-492F-9BCE-3D9B99CB9904}</Project>
-      <Name>HIT.Web.Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Web\HIT.Web.ViewModels\HIT.Web.ViewModels.csproj">
       <Project>{7B0A2E3C-915B-4211-926F-F1BF078D0E8F}</Project>

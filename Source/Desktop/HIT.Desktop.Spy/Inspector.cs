@@ -5,9 +5,9 @@
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
+    using Common.Extensions;
     using Common.Utils;
     using Newtonsoft.Json;
-    using Web.Infrastructure.Extensions;
 
     public class Inspector
     {
@@ -89,32 +89,6 @@
             if (sessionName.ContainsAny(charactersNotAllowed))
             {
                 throw new InvalidOperationException($@"The session name cannot contain any of the following characters: {string.Join(" ", charactersNotAllowed)}");
-            }
-        }
-    }
-
-    [Serializable]
-    public class InspectorSettings
-    {
-        private static InspectorSettings defaultSettings =
-            new InspectorSettings
-            {
-                SessionName = Guid.NewGuid().ToString(),
-                SnapshotDelay = 10000,
-                KeysPressedCap = 20
-            };
-
-        public string SessionName { get; set; }
-
-        public int SnapshotDelay { get; set; }
-
-        public int KeysPressedCap { get; set; }
-
-        public static InspectorSettings DefaultSettings
-        {
-            get
-            {
-                return defaultSettings;
             }
         }
     }
