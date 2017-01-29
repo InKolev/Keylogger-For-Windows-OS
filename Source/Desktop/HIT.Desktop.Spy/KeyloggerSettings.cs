@@ -11,17 +11,14 @@ namespace HIT.Desktop.Spy
         {
             defaultSettings = new KeyloggerSettings
             {
-                KeysPressedThreshold = 20,
-                HttpServiceSettings = HttpServiceSettings.DefaultKeyloggerSettings,
+                RequestUrl = "http://localhost:62164/api/Sessions/PostKeysPressed",
                 TimerSettings = TimerSettings.DefaultSettings
             };
         }
 
-        public int KeysPressedThreshold { get; set; }
+        public string RequestUrl { get; set; }
 
         public TimerSettings TimerSettings { get; set; }
-
-        public HttpServiceSettings HttpServiceSettings { get; set; }
 
         public static KeyloggerSettings DefaultSettings
         {

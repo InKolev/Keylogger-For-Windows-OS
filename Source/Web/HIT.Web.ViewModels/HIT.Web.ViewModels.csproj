@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseViewModel.cs" />
-    <Compile Include="KeylogViewModel.cs" />
+    <Compile Include="KeysPressedViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SnapshotViewModel.cs" />
   </ItemGroup>

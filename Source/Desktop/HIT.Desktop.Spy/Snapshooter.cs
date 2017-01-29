@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HIT.Common.Utils;
+using HIT.Services;
 using HIT.Web.ViewModels;
 
 namespace HIT.Desktop.Spy
@@ -14,11 +12,16 @@ namespace HIT.Desktop.Spy
     public class Snapshooter : IDataCollector
     {
         private readonly string SessionId;
+        private readonly SnapshooterSettings Settings;
+        private readonly IHttpService HttpService;
+
         private bool isRunning = true;
 
-        public Snapshooter(string sessionId)
+        public Snapshooter(string sessionId, SnapshooterSettings settings, IHttpService httpService)
         {
+            this.Settings = settings;
             this.SessionId = sessionId;
+            this.HttpService = httpService;
         }
 
         public async Task Start()
@@ -47,22 +50,20 @@ namespace HIT.Desktop.Spy
 
                         try
                         {
-                            var baseAddress = "http://localhost:62164/";
-                            var requestUri = "api/Sessions/PostSnapshot";
                             var model = new SnapshotViewModel
                             {
                                 SessionId = this.SessionId,
                                 SnapshotAsByteArray = imageAsByteArray
                             };
 
-                            await SendTo(baseAddress,requestUri, model);
+                            await this.HttpService.SendAsBson(model, this.Settings.RequestUrl);
                         }
                         catch (Exception exc)
                         {
                             // TODO: Log the exception cause
                         }
 
-                        Thread.Sleep(10000);
+                        Thread.Sleep(this.Settings.SnapshotDelayInMilliseconds);
                     }
                 }
             }
@@ -71,28 +72,6 @@ namespace HIT.Desktop.Spy
         public void Stop()
         {
             this.isRunning = false;
-        }
-
-        private async Task SendTo<T>(string baseAddress, string requestUri, T data)
-        {
-            // TODO: Introduce an HttpClientProvider to detach from the HttpClient type
-            // and make the code more testable
-            using (var client = new HttpClient())
-            {
-                // Set the Base address for all request uri's
-                client.BaseAddress = new Uri(baseAddress);
-
-                // Set the Accept header to ContentType BSON
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/bson"));
-
-                // POST using a BSON formatter
-                var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync(requestUri, data, bsonFormatter);
-
-                result.EnsureSuccessStatusCode();
-            }
         }
     }
 }

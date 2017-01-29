@@ -12,13 +12,13 @@ namespace HIT.Desktop.Spy
             defaultSettings = new SnapshooterSettings
             {
                 SnapshotDelayInMilliseconds = 10000,
-                HttpServiceSettings = HttpServiceSettings.DefaultSnapshooterSettings
+                RequestUrl = "http://localhost:62164/api/Sessions/PostSnapshot"
             };
         }
 
-        public int SnapshotDelayInMilliseconds { get; set; }
+        public string RequestUrl { get; set; }
 
-        public HttpServiceSettings HttpServiceSettings { get; set; }
+        public int SnapshotDelayInMilliseconds { get; set; }
 
         public static SnapshooterSettings DefaultSettings
         {

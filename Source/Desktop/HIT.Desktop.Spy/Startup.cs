@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using HIT.Common.Extensions;
 using HIT.Common.Utils;
+using HIT.Services;
 using Newtonsoft.Json;
 
 namespace HIT.Desktop.Spy
@@ -12,14 +13,15 @@ namespace HIT.Desktop.Spy
         static void Main(string[] args)
         {
             // Load configs in a static class/dictionary
-            var settingsPath = "InspectorSettings.json"; // This path looks in the bin folder
-            var settings = ParseInspectorSettingsFile(settingsPath);
+            var settingsPath = "InspectorSettingsNOTVALID.json"; // This path looks in the bin folder
+            var settings = LoadSettings(settingsPath);
             var sessionId = ComposeSessionId(settings.SessionName);
-            var inspector = new Inspector(sessionId, settings);
+            var httpService = new HttpService();
+            var inspector = new Inspector(sessionId, settings, httpService);
             inspector.Start();
         }
 
-        private static InspectorSettings ParseInspectorSettingsFile(string inspectorSettingsFilePath)
+        private static InspectorSettings LoadSettings(string inspectorSettingsFilePath)
         {
             if (!File.Exists(inspectorSettingsFilePath))
             {

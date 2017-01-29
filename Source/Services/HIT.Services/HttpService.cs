@@ -8,7 +8,7 @@ namespace HIT.Services
 {
     public class HttpService : IHttpService
     {
-        public async Task SendAsBson<T>(T data, string baseAddress, string requestUri)
+        public async Task SendAsBson<T>(T data, string baseAddress, string requestUrl)
         {
             // TODO: Introduce an HttpClientProvider to detach from the HttpClient type
             // and make the code more testable
@@ -24,7 +24,26 @@ namespace HIT.Services
 
                 // POST using a BSON formatter
                 var bsonFormatter = new BsonMediaTypeFormatter();
-                var result = await client.PostAsync(requestUri, data, bsonFormatter);
+                var result = await client.PostAsync(requestUrl, data, bsonFormatter);
+
+                result.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task SendAsBson<T>(T data, string requestUrl)
+        {
+            // TODO: Introduce an HttpClientProvider to detach from the HttpClient type
+            // and make the code more testable
+            using (var client = new HttpClient())
+            {
+                // Set the Accept header to ContentType BSON
+                var mediaType = new MediaTypeWithQualityHeaderValue("application/bson");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(mediaType);
+
+                // POST using a BSON formatter
+                var bsonFormatter = new BsonMediaTypeFormatter();
+                var result = await client.PostAsync(requestUrl, data, bsonFormatter);
 
                 result.EnsureSuccessStatusCode();
             }

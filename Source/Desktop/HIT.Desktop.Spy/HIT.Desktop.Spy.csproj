@@ -58,12 +58,15 @@
   <ItemGroup>
     <Compile Include="Inspector.cs" />
     <Compile Include="InspectorSettings.cs" />
-    <Compile Include="IRunnable.cs" />
+    <Compile Include="IDataCollector.cs" />
     <Compile Include="Keylogger.cs" />
+    <Compile Include="KeyloggerSettings.cs" />
     <Compile Include="Keys.cs" />
+    <Compile Include="SnapshooterSettings.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Snapshooter.cs" />
+    <Compile Include="TimerSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -77,6 +80,10 @@
     <ProjectReference Include="..\..\Common\HIT.Common.Utils\HIT.Common.Utils.csproj">
       <Project>{905C79F7-6B10-41DF-9035-CC14A25852FE}</Project>
       <Name>HIT.Common.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Services\HIT.Services\HIT.Services.csproj">
+      <Project>{E3A08940-D029-4916-B1BC-AA3C016950A3}</Project>
+      <Name>HIT.Services</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Web\HIT.Web.ViewModels\HIT.Web.ViewModels.csproj">
       <Project>{7B0A2E3C-915B-4211-926F-F1BF078D0E8F}</Project>

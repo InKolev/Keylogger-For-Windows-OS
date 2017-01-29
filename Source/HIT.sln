@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HIT.Desktop.Spy.Offline", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HIT.Common.Extensions", "Common\HIT.Common.Extensions\HIT.Common.Extensions.csproj", "{DBFBF737-8E7B-40BB-A863-A496AFFA359F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{1AD1E9E2-BD01-4B83-A79E-95B0C44921E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HIT.Services", "Services\HIT.Services\HIT.Services.csproj", "{E3A08940-D029-4916-B1BC-AA3C016950A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,10 @@ Global
 		{DBFBF737-8E7B-40BB-A863-A496AFFA359F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBFBF737-8E7B-40BB-A863-A496AFFA359F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBFBF737-8E7B-40BB-A863-A496AFFA359F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3A08940-D029-4916-B1BC-AA3C016950A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3A08940-D029-4916-B1BC-AA3C016950A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3A08940-D029-4916-B1BC-AA3C016950A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3A08940-D029-4916-B1BC-AA3C016950A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,5 +77,6 @@ Global
 		{79B056A5-4637-49E9-BBEB-5AEF8F23AEE7} = {957BCDE2-8D97-49E1-8DAF-F40D5381BB6D}
 		{B575FDAA-60F6-4E90-81D8-6319190F2DB4} = {957BCDE2-8D97-49E1-8DAF-F40D5381BB6D}
 		{DBFBF737-8E7B-40BB-A863-A496AFFA359F} = {8DB90BF5-D646-407C-9BC2-9D63543EB14C}
+		{E3A08940-D029-4916-B1BC-AA3C016950A3} = {1AD1E9E2-BD01-4B83-A79E-95B0C44921E9}
 	EndGlobalSection
 EndGlobal
